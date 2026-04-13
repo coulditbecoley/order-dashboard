@@ -74,7 +74,7 @@ export default function OrdersTable() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('date');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [cutChecks, setCutChecks] = useState<CutCheckState>({});
 
   const syncOrders = useCallback(async () => {
@@ -135,7 +135,6 @@ export default function OrdersTable() {
 
   const columns: { key: SortField; label: string }[] = [
     { key: 'orderNumber', label: 'ORDER #' },
-    { key: 'statusId', label: 'ST_ID' },
     { key: 'date', label: 'DATE' },
     { key: 'cut', label: 'CUT' },
     { key: 'qty', label: 'QTY' },
@@ -152,6 +151,7 @@ export default function OrdersTable() {
     { key: 'acc', label: 'ACC' },
     { key: 'secCord', label: 'SEC CORD' },
     { key: 'notes', label: 'NOTES' },
+    { key: 'statusId', label: 'STATUS_ID' },
   ];
 
   return (

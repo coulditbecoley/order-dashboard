@@ -46,11 +46,11 @@ export async function GET() {
     // Filter for status_id = 2 (Awaiting Fulfillment)
     const filteredOrders = orders.filter((order: BigCommerceOrder) => order.status_id === 2);
     
-    // Sort by date_created (newest first)
+    // Sort by date_created (oldest first)
     const sortedOrders = filteredOrders.sort((a: BigCommerceOrder, b: BigCommerceOrder) => {
       const dateA = new Date(a.date_created as string).getTime();
       const dateB = new Date(b.date_created as string).getTime();
-      return dateB - dateA; // Newest first
+      return dateA - dateB; // Oldest first
     });
     
     // Return filtered and sorted orders
