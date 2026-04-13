@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server';
 
+interface BigCommerceOrder {
+  id: number;
+  status_id: number;
+  [key: string]: unknown;
+}
+
 export async function GET() {
   const BC_STORE_HASH = process.env.BC_STORE_HASH;
   const BC_API_TOKEN = process.env.BC_API_TOKEN;
@@ -34,8 +40,8 @@ export async function GET() {
     const data = await response.json();
     
     // Filter for status_id = 7 (Awaiting Fulfillment)
-    const filteredOrders = (Array.isArray(data) ? data : data.orders || [])
-      .filter((order: any) => order.status_id === 7);
+    const orders: BigCommerceOrder[] = Array.isArray(data) ? data : (data as { orders: BigCommerceOrder[] }).orders || [];
+    const filteredOrders = orders.filter((order: BigCommerceOrder) => order.status_id === 7);
     
     // Cache headers: 5 minutes
     return NextResponse.json(filteredOrders, {
