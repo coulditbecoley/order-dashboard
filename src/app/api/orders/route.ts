@@ -42,11 +42,14 @@ export async function GET() {
     // Get all orders
     const orders: BigCommerceOrder[] = Array.isArray(data) ? data : (data as { orders: BigCommerceOrder[] }).orders || [];
     
-    // Filter for status_id = 10 (Awaiting Fulfillment in BigCommerce)
-    const filteredOrders = orders.filter((order: BigCommerceOrder) => order.status_id === 10);
+    // Filter for status_id = 11 (Awaiting Shipment/Fulfillment in some BC configs)
+    const filteredOrders = orders.filter((order: BigCommerceOrder) => order.status_id === 11);
     
-    // If no orders with status 10, return all for debugging
-    const resultsToReturn = filteredOrders.length > 0 ? filteredOrders : orders;
+    // If no orders with status 11, try status 10
+    const resultsToReturn = filteredOrders.length > 0 ? filteredOrders : 
+      orders.filter((order: BigCommerceOrder) => order.status_id === 10).length > 0 ?
+      orders.filter((order: BigCommerceOrder) => order.status_id === 10) :
+      orders; // Fallback to all orders
     
     // Return orders (filtered if available)
     return NextResponse.json(resultsToReturn, {
