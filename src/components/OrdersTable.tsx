@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { ArrowUpDown, RefreshCw } from 'lucide-react';
 import { BigCommerceOrder } from '@/types';
-import { getOrders, saveOrdersCache } from '@/lib/bigcommerce-client';
 import { formatDate } from 'date-fns';
 
 interface OrderRow {
@@ -73,14 +72,12 @@ export default function OrdersTable() {
     setLoading(true);
     setError(null);
     try {
-      const response = await getOrders({
-        page: 1,
-        limit: 100,
-        sort: 'date_created',
-        direction: 'desc',
-      });
-      setOrders(response.orders);
-      saveOrdersCache(response);
+      const response = await fetch('/api/orders');
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+      const data = await response.json();
+      setOrders(Array.isArray(data) ? data : data.orders || []);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to sync orders';
       setError(message);
