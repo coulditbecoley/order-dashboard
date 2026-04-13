@@ -72,7 +72,7 @@ export default function OrdersTable() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('date');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [cutChecks, setCutChecks] = useState<CutCheckState>({});
 
   const syncOrders = async () => {

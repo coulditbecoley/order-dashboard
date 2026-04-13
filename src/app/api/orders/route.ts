@@ -33,8 +33,12 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json();
     
+    // Filter for status_id = 7 (Awaiting Fulfillment)
+    const filteredOrders = (Array.isArray(data) ? data : data.orders || [])
+      .filter((order: any) => order.status_id === 7);
+    
     // Cache headers: 5 minutes
-    return NextResponse.json(data, {
+    return NextResponse.json(filteredOrders, {
       headers: {
         'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
       },
