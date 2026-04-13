@@ -6,9 +6,9 @@ import { BigCommerceOrder } from '@/types';
 import { formatDate } from 'date-fns';
 
 interface OrderRow {
+  id: number;
   orderNumber: string;
   date: string;
-  notes: string;
   cut: string;
   qty: string;
   type: string;
@@ -23,25 +23,30 @@ interface OrderRow {
   washer: string;
   acc: string;
   secCord: string;
+  notes: string;
+}
+
+interface CutCheckState {
+  [key: string]: boolean;
 }
 
 function extractOrderDetails(order: BigCommerceOrder): OrderRow {
   // Extract custom fields from staff_notes and customer_message
   const notes = order.customer_message || order.staff_notes || '';
-  
+
   // Parse product options from first product
   const product = order.products?.[0];
   const options = product?.product_options || [];
-  
+
   const getOptionValue = (displayName: string): string => {
     const opt = options.find(o => o.display_name?.toLowerCase().includes(displayName.toLowerCase()));
     return opt?.display_value || '—';
   };
 
   return {
+    id: order.id,
     orderNumber: String(order.id),
     date: formatDate(new Date(order.date_created), 'MMM dd, yyyy'),
-    notes: notes.substring(0, 50) + (notes.length > 50 ? '...' : ''),
     cut: getOptionValue('cut'),
     qty: String(product?.quantity || order.items_total || '—'),
     type: getOptionValue('type') || product?.type || '—',
@@ -56,6 +61,7 @@ function extractOrderDetails(order: BigCommerceOrder): OrderRow {
     washer: getOptionValue('washer'),
     acc: getOptionValue('acc'),
     secCord: getOptionValue('cord'),
+    notes: notes.substring(0, 50) + (notes.length > 50 ? '...' : ''),
   };
 }
 
@@ -67,6 +73,7 @@ export default function OrdersTable() {
   const [error, setError] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [cutChecks, setCutChecks] = useState<CutCheckState>({});
 
   const syncOrders = async () => {
     setLoading(true);
@@ -91,6 +98,18 @@ export default function OrdersTable() {
     syncOrders();
   }, []);
 
+  // Load cut states from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('kobra_cut_states');
+    if (saved) {
+      try {
+        setCutChecks(JSON.parse(saved));
+      } catch (e) {
+        console.error('Failed to load cut states:', e);
+      }
+    }
+  }, []);
+
   const handleSort = (field: SortField) => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -100,10 +119,18 @@ export default function OrdersTable() {
     }
   };
 
+  // Handle checkbox change for CUT column
+  const handleCutChange = (orderId: number, checked: boolean) => {
+    const key = `order_${orderId}`;
+    const newStates = { ...cutChecks, [key]: checked };
+    setCutChecks(newStates);
+    localStorage.setItem('kobra_cut_states', JSON.stringify(newStates));
+  };
+
   const rows = orders.map(extractOrderDetails).sort((a, b) => {
     const aVal = String(a[sortField]);
     const bVal = String(b[sortField]);
-    
+
     const comparison = aVal.localeCompare(bVal, undefined, { numeric: true });
     return sortDirection === 'asc' ? comparison : -comparison;
   });
@@ -111,7 +138,6 @@ export default function OrdersTable() {
   const columns: { key: SortField; label: string }[] = [
     { key: 'orderNumber', label: 'ORDER #' },
     { key: 'date', label: 'DATE' },
-    { key: 'notes', label: 'NOTES' },
     { key: 'cut', label: 'CUT' },
     { key: 'qty', label: 'QTY' },
     { key: 'type', label: 'TYPE' },
@@ -126,6 +152,7 @@ export default function OrdersTable() {
     { key: 'washer', label: 'WASHER' },
     { key: 'acc', label: 'ACC' },
     { key: 'secCord', label: 'SEC CORD' },
+    { key: 'notes', label: 'NOTES' },
   ];
 
   return (
@@ -184,18 +211,34 @@ export default function OrdersTable() {
                 </td>
               </tr>
             ) : (
-              rows.map((row) => (
-                <tr
-                  key={row.orderNumber}
-                  className="bg-gray-900/50 hover:bg-gray-900 transition-colors"
-                >
-                  {columns.map(col => (
-                    <td key={col.key} className="px-4 py-3 text-gray-300 whitespace-nowrap">
-                      {row[col.key]}
-                    </td>
-                  ))}
-                </tr>
-              ))
+              rows.map((row) => {
+                const cutKey = `order_${row.id}`;
+                const isCutChecked = cutChecks[cutKey] || false;
+                return (
+                  <tr
+                    key={row.orderNumber}
+                    className="bg-gray-900/50 hover:bg-gray-900 transition-colors"
+                  >
+                    {columns.map(col => (
+                      <td key={col.key} className="px-4 py-3 text-gray-300 whitespace-nowrap">
+                        {col.key === 'cut' ? (
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={isCutChecked}
+                              onChange={(e) => handleCutChange(row.id, e.target.checked)}
+                              className="h-4 w-4 rounded border-gray-600 bg-gray-700 text-indigo-600 cursor-pointer"
+                            />
+                            <span>{row[col.key]}</span>
+                          </div>
+                        ) : (
+                          row[col.key]
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
