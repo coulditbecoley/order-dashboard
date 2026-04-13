@@ -53,6 +53,11 @@ export async function GET() {
       return dateA - dateB; // Oldest first
     });
     
+    // Debug: Log first order structure
+    if (sortedOrders.length > 0) {
+      console.log('First order structure:', JSON.stringify(sortedOrders[0], null, 2));
+    }
+    
     // Return filtered and sorted orders
     return NextResponse.json(sortedOrders, {
       headers: {
