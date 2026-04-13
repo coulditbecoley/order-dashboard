@@ -1,8 +1,8 @@
 'use client';
 
-import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { useState } from 'react';
+import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
 import './globals.css';
 
@@ -55,7 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
             {/* Sidebar Nav */}
             <nav className="flex-1 px-3 py-4 space-y-2">
-              <a
+              <Link
                 href="/"
                 className="flex items-center gap-3 px-3 py-2 rounded-lg bg-indigo-600 text-white font-medium text-sm transition-colors"
               >
@@ -68,7 +68,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   />
                 </svg>
                 {sidebarOpen && <span>Orders</span>}
-              </a>
+              </Link>
             </nav>
 
             {/* Sidebar Footer */}

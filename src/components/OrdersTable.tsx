@@ -187,7 +187,7 @@ export default function OrdersTable() {
                 </td>
               </tr>
             ) : (
-              rows.map((row, idx) => (
+              rows.map((row) => (
                 <tr
                   key={row.orderNumber}
                   className="bg-gray-900/50 hover:bg-gray-900 transition-colors"
