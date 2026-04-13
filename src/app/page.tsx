@@ -10,7 +10,7 @@ export default function HomePage() {
           <h1 className="text-xl font-bold text-gray-900">Orders</h1>
         </div>
         <p className="text-sm text-gray-500">
-          Real-time view of all BigCommerce orders. Auto-refreshes every 30 seconds.
+          BigCommerce orders. Click &quot;Sync orders&quot; to fetch the latest data.
         </p>
       </div>
       <OrderList />

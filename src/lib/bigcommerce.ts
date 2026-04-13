@@ -81,18 +81,4 @@ export async function getOrderWithProducts(orderId: number): Promise<BigCommerce
   return { ...order, products };
 }
 
-export async function registerWebhook(scope: string, destination: string): Promise<unknown> {
-  return bcFetch('/hooks', {
-    method: 'POST',
-    body: JSON.stringify({
-      scope,
-      destination,
-      is_active: true,
-    }),
-  });
-}
-
-export async function listWebhooks(): Promise<unknown[]> {
-  const data = await bcFetch<unknown[]>('/hooks');
-  return Array.isArray(data) ? data : [];
-}
+// Webhooks removed - manual sync only

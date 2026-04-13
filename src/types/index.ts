@@ -64,20 +64,6 @@ export interface OrdersResponse {
   totalPages: number;
 }
 
-export interface WebhookEvent {
-  id: string;
-  scope: string;
-  store_id: string;
-  data: {
-    type: string;
-    id: number;
-  };
-  hash: string;
-  created_at: number;
-  producer: string;
-  processed_at: string;
-}
-
 export type OrderSortField = 'id' | 'date_created' | 'total_inc_tax' | 'status';
 export type SortDirection = 'asc' | 'desc';
 
@@ -90,6 +76,7 @@ export interface OrderFilters {
   search?: string;
 }
 
+// Manual sync only - no webhooks or auto-refresh
 export const ORDER_STATUSES: Record<number, { label: string; color: string }> = {
   0: { label: 'Incomplete', color: 'bg-gray-100 text-gray-700' },
   1: { label: 'Pending', color: 'bg-yellow-100 text-yellow-700' },

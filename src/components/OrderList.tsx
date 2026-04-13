@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { BigCommerceOrder, OrderFilters, OrdersResponse } from '@/types';
 import OrderCard from './OrderCard';
 import OrderFiltersBar from './OrderFilters';
@@ -16,8 +16,6 @@ const DEFAULT_FILTERS: OrderFilters = {
   direction: 'desc',
 };
 
-const POLL_INTERVAL = 30_000; // 30 seconds
-
 export default function OrderList() {
   const [filters, setFilters] = useState<OrderFilters>(DEFAULT_FILTERS);
   const [response, setResponse] = useState<OrdersResponse | null>(null);
@@ -25,7 +23,6 @@ export default function OrderList() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchOrders = useCallback(async (isManualRefresh = false) => {
     if (isManualRefresh) setRefreshing(true);
@@ -58,14 +55,6 @@ export default function OrderList() {
   useEffect(() => {
     setLoading(true);
     fetchOrders();
-  }, [fetchOrders]);
-
-  // Poll every 30 seconds
-  useEffect(() => {
-    intervalRef.current = setInterval(() => fetchOrders(), POLL_INTERVAL);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
   }, [fetchOrders]);
 
   const handleFilterChange = useCallback((changes: Partial<OrderFilters>) => {

@@ -110,10 +110,10 @@ export default function OrderFiltersBar({
         </span>
       </div>
 
-      {/* Refresh bar */}
+      {/* Sync bar */}
       <div className="flex items-center justify-between text-xs text-gray-400 border-t border-gray-100 pt-2">
         <span>
-          {lastUpdated ? `Updated ${lastUpdated.toLocaleTimeString()}` : 'Auto-refreshes every 30s'}
+          {lastUpdated ? `Last synced: ${lastUpdated.toLocaleTimeString()}` : 'No sync yet'}
         </span>
         <button
           onClick={onRefresh}
@@ -121,7 +121,7 @@ export default function OrderFiltersBar({
           className="flex items-center gap-1 text-indigo-600 hover:text-indigo-700 disabled:opacity-50 font-medium"
         >
           <span className={isRefreshing ? 'animate-spin inline-block' : ''}>↻</span>
-          {isRefreshing ? 'Refreshing…' : 'Refresh now'}
+          {isRefreshing ? 'Syncing…' : 'Sync orders'}
         </button>
       </div>
     </div>
