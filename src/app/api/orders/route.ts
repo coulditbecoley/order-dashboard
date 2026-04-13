@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   const BC_STORE_HASH = process.env.BC_STORE_HASH;
   const BC_API_TOKEN = process.env.BC_API_TOKEN;
 
@@ -43,10 +43,11 @@ export async function GET(request: NextRequest) {
         'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
       },
     });
-  } catch (error) {
-    console.error('BC API Error:', error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Failed to fetch orders';
+    console.error('BC API Error:', errorMessage);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to fetch orders' },
+      { error: errorMessage },
       { status: 500 }
     );
   }
