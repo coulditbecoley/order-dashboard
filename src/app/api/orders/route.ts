@@ -39,17 +39,17 @@ export async function GET() {
 
     const data = await response.json();
     
-    // Get all orders first (debug - remove filter to see all statuses)
+    // Get all orders and map with status_id for debugging
     const orders: BigCommerceOrder[] = Array.isArray(data) ? data : (data as { orders: BigCommerceOrder[] }).orders || [];
     
-    // Log status IDs in store for debugging
-    const statusIds = new Set(orders.map(o => o.status_id));
-    console.log('Available status IDs in store:', Array.from(statusIds).sort());
+    // Log all status IDs
+    const statusMap = new Map<number, number>();
+    orders.forEach(o => {
+      statusMap.set(o.status_id, (statusMap.get(o.status_id) || 0) + 1);
+    });
+    console.log('Status ID distribution:', Object.fromEntries(statusMap));
     
-    // Filter for status_id = 11 (Awaiting Fulfillment)
-    const filteredOrders = orders.filter((order: BigCommerceOrder) => order.status_id === 11);
-    
-    // Return all orders for now (debug)
+    // Return all orders with status_id visible (debug)
     return NextResponse.json(orders, {
       headers: {
         'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
