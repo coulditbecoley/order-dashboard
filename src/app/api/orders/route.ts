@@ -39,9 +39,9 @@ export async function GET() {
 
     const data = await response.json();
     
-    // Filter for status_id = 7 (Awaiting Fulfillment)
+    // Filter for status_id = 11 (Awaiting Fulfillment)
     const orders: BigCommerceOrder[] = Array.isArray(data) ? data : (data as { orders: BigCommerceOrder[] }).orders || [];
-    const filteredOrders = orders.filter((order: BigCommerceOrder) => order.status_id === 7);
+    const filteredOrders = orders.filter((order: BigCommerceOrder) => order.status_id === 11);
     
     // Cache headers: 5 minutes
     return NextResponse.json(filteredOrders, {
