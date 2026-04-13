@@ -1,6 +1,6 @@
 'use client';
 
-import { OrderFilters, OrderSortField, SortDirection } from '@/types';
+import { OrderFilters, OrderSortField } from '@/types';
 import { Search, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
 import { useCallback } from 'react';
 

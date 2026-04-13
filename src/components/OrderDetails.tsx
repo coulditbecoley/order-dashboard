@@ -6,7 +6,7 @@ import StatusBadge from './StatusBadge';
 import LoadingSpinner from './LoadingSpinner';
 import ErrorMessage from './ErrorMessage';
 import { format } from 'date-fns';
-import { ArrowLeft, MapPin, CreditCard, Package, User, Mail, Phone } from 'lucide-react';
+import { ArrowLeft, MapPin, CreditCard, Package, User, Mail } from 'lucide-react';
 import Link from 'next/link';
 
 interface OrderDetailsProps {
@@ -190,7 +190,7 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
 
       {order.customer_message && (
         <DetailSection title="Customer Note">
-          <p className="text-sm text-gray-700 italic">"{order.customer_message}"</p>
+          <p className="text-sm text-gray-700 italic">&quot;{order.customer_message}&quot;</p>
         </DetailSection>
       )}
     </div>
