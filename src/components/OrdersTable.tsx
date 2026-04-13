@@ -31,38 +31,78 @@ interface CutCheckState {
   [key: string]: boolean;
 }
 
-function extractOrderDetails(order: BigCommerceOrder): OrderRow {
-  // Extract custom fields from staff_notes and customer_message
-  const notes = order.customer_message || order.staff_notes || '';
+function stripPrice(value: string): string {
+  if (!value) return '—';
+  return value.replace(/\s*\([^)]*\$[^)]*\)/g, '').replace(/\s*\([^)]*\s+\d+\s+off\)/g, '').trim();
+}
 
-  // Parse product options from first product
+function extractLight(modelStr: string): string {
+  if (!modelStr) return '—';
+  const lights = ['Streamlight', 'Olight', 'Surefire', 'Inforce'];
+  for (const light of lights) {
+    if (modelStr.toLowerCase().includes(light.toLowerCase())) return light;
+  }
+  return '—';
+}
+
+function extractGunModel(modelStr: string): string {
+  if (!modelStr) return '—';
+  // Remove light/rail details, keep gun model only
+  return modelStr.split(/\s*(Streamlight|Olight|Surefire|Inforce|TLR|Baldr|PL-|1913)/i)[0].trim();
+}
+
+function normalizeClip(clip: string): string {
+  if (!clip || clip === '—') return '—';
+  clip = stripPrice(clip);
+  clip = clip.replace(/Discreet Carry Clip/i, 'DCC');
+  return clip;
+}
+
+function extractBool(text: string): string {
+  if (!text || text === '—') return '—';
+  return text.toLowerCase().includes('yes') ? 'Yes' : text.toLowerCase().includes('no') ? 'No' : stripPrice(text);
+}
+
+function extractOrderDetails(order: BigCommerceOrder): OrderRow {
+  const notes = order.customer_message || order.staff_notes || '';
   const product = order.products?.[0];
   const options = product?.product_options || [];
 
+  // Helper to find option value by display name
   const getOptionValue = (displayName: string): string => {
     const opt = options.find(o => o.display_name?.toLowerCase().includes(displayName.toLowerCase()));
     return opt?.display_value || '—';
   };
+
+  // Extract fields
+  const modelStr = getOptionValue('model');
+  const lightStr = getOptionValue('light') || extractLight(modelStr);
+  const colorStr = getOptionValue('color') || getOptionValue('front color');
+  const backColorStr = getOptionValue('back color');
+  const clipStr = getOptionValue('clip') || getOptionValue('belt attachment') || getOptionValue('belt loop');
+  const magStr = getOptionValue('mag carrier') || getOptionValue('non connected mag');
+  const mwStr = getOptionValue('modwing') || getOptionValue('tek-mount');
+  const washersStr = getOptionValue('washers') || getOptionValue('finishing washers');
 
   return {
     id: order.id,
     orderNumber: String(order.id),
     statusId: String(order.status_id),
     date: formatDate(new Date(order.date_created), 'MMM dd, yyyy'),
-    cut: getOptionValue('cut'),
+    cut: extractBool(getOptionValue('cut')),
     qty: String(product?.quantity || order.items_total || '—'),
-    type: getOptionValue('type') || product?.type || '—',
-    model: getOptionValue('model'),
-    light: getOptionValue('light'),
-    hand: getOptionValue('hand'),
-    color: getOptionValue('color'),
-    oc: getOptionValue('oc'),
-    magHw: getOptionValue('mag') || getOptionValue('hardware'),
-    clip: getOptionValue('clip'),
-    mw: getOptionValue('mw'),
-    washer: getOptionValue('washer'),
-    acc: getOptionValue('acc'),
-    secCord: getOptionValue('cord'),
+    type: product?.name || '—',
+    model: extractGunModel(modelStr),
+    light: extractLight(modelStr),
+    hand: stripPrice(getOptionValue('hand')),
+    color: backColorStr ? `${stripPrice(colorStr)} / ${stripPrice(backColorStr)}` : stripPrice(colorStr),
+    oc: extractBool(getOptionValue('optic cut')),
+    magHw: extractBool(magStr),
+    clip: normalizeClip(clipStr),
+    mw: extractBool(mwStr),
+    washer: washersStr?.toLowerCase().includes('none') ? 'None' : stripPrice(washersStr),
+    acc: getOptionValue('accessory') === '—' ? '—' : stripPrice(getOptionValue('accessory')),
+    secCord: extractBool(getOptionValue('security cord')),
     notes: notes.substring(0, 50) + (notes.length > 50 ? '...' : ''),
   };
 }
