@@ -8,6 +8,7 @@ import { formatDate } from 'date-fns';
 interface OrderRow {
   id: number;
   orderNumber: string;
+  statusId: string;
   date: string;
   cut: string;
   qty: string;
@@ -46,6 +47,7 @@ function extractOrderDetails(order: BigCommerceOrder): OrderRow {
   return {
     id: order.id,
     orderNumber: String(order.id),
+    statusId: String(order.status_id),
     date: formatDate(new Date(order.date_created), 'MMM dd, yyyy'),
     cut: getOptionValue('cut'),
     qty: String(product?.quantity || order.items_total || '—'),
@@ -72,7 +74,7 @@ export default function OrdersTable() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('date');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [cutChecks, setCutChecks] = useState<CutCheckState>({});
 
   const syncOrders = useCallback(async () => {
@@ -133,6 +135,7 @@ export default function OrdersTable() {
 
   const columns: { key: SortField; label: string }[] = [
     { key: 'orderNumber', label: 'ORDER #' },
+    { key: 'statusId', label: 'ST_ID' },
     { key: 'date', label: 'DATE' },
     { key: 'cut', label: 'CUT' },
     { key: 'qty', label: 'QTY' },
