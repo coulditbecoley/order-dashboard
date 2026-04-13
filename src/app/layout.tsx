@@ -35,10 +35,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div className="h-16 flex items-center justify-between px-4 border-b border-gray-800">
               {sidebarOpen && (
                 <div className="flex items-center gap-2">
-                  <div className="h-8 w-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">K</span>
+                  <img src="/cobra-logo.svg" alt="Kobra" className="h-8 w-8" />
+                  <div className="flex flex-col">
+                    <span className="font-bold text-gray-100 text-sm">Kobra</span>
+                    <span className="text-xs text-gray-500">Dashboard</span>
                   </div>
-                  <span className="font-bold text-gray-100 text-sm">Kobra</span>
                 </div>
               )}
               <button
