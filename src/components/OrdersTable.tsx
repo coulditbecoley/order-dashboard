@@ -94,10 +94,6 @@ export default function OrdersTable() {
     }
   }, []);
 
-  useEffect(() => {
-    syncOrders();
-  }, [syncOrders]);
-
   // Load cut states from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem('kobra_cut_states');
