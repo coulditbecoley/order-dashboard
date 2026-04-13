@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ArrowUpDown, RefreshCw } from 'lucide-react';
 import { BigCommerceOrder } from '@/types';
 import { formatDate } from 'date-fns';
@@ -75,7 +75,7 @@ export default function OrdersTable() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [cutChecks, setCutChecks] = useState<CutCheckState>({});
 
-  const syncOrders = async () => {
+  const syncOrders = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -92,11 +92,11 @@ export default function OrdersTable() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     syncOrders();
-  }, []);
+  }, [syncOrders]);
 
   // Load cut states from localStorage on mount
   useEffect(() => {
