@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 interface BigCommerceOrder {
   id: number;
   status_id: number;
+  date_created: string;
   [key: string]: unknown;
 }
 
@@ -43,9 +44,9 @@ export async function GET() {
     const orders: BigCommerceOrder[] = Array.isArray(data) ? data : (data as { orders: BigCommerceOrder[] }).orders || [];
     
     // Sort by date_created (newest first)
-    const sortedOrders = orders.sort((a: any, b: any) => {
-      const dateA = new Date(a.date_created).getTime();
-      const dateB = new Date(b.date_created).getTime();
+    const sortedOrders = orders.sort((a: BigCommerceOrder, b: BigCommerceOrder) => {
+      const dateA = new Date(a.date_created as string).getTime();
+      const dateB = new Date(b.date_created as string).getTime();
       return dateB - dateA; // Newest first
     });
     
