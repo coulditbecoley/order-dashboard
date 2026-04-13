@@ -43,11 +43,11 @@ export async function GET() {
     // Get all orders
     const orders: BigCommerceOrder[] = Array.isArray(data) ? data : (data as { orders: BigCommerceOrder[] }).orders || [];
     
-    // Filter for status_id = 2 (Awaiting Fulfillment)
-    const filteredOrders = orders.filter((order: BigCommerceOrder) => order.status_id === 2);
+    // Debug: Return ALL orders to identify status_id for current orders
+    // Temporarily disabled filter: status_id = 2
     
     // Sort by date_created (oldest first)
-    const sortedOrders = filteredOrders.sort((a: BigCommerceOrder, b: BigCommerceOrder) => {
+    const sortedOrders = orders.sort((a: BigCommerceOrder, b: BigCommerceOrder) => {
       const dateA = new Date(a.date_created as string).getTime();
       const dateB = new Date(b.date_created as string).getTime();
       return dateA - dateB; // Oldest first
