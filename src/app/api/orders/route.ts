@@ -4,6 +4,7 @@ interface BigCommerceOrder {
   id: number;
   status_id: number;
   date_created: string;
+  products?: { url?: string; resource?: string } | any[];
   [key: string]: unknown;
 }
 
@@ -18,18 +19,17 @@ export async function GET() {
     );
   }
 
+  const headers = {
+    'X-Auth-Token': BC_API_TOKEN,
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  };
+
   try {
     // Fetch up to 250 orders sorted newest-first
     const response = await fetch(
       `https://api.bigcommerce.com/stores/${BC_STORE_HASH}/v2/orders?limit=250&sort=date_created:desc`,
-      {
-        method: 'GET',
-        headers: {
-          'X-Auth-Token': BC_API_TOKEN,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      }
+      { method: 'GET', headers }
     );
 
     if (!response.ok) {
@@ -44,13 +44,12 @@ export async function GET() {
       ? data
       : ((data as any)?.orders ?? []);
 
-    // Health/diagnostics: two-stage filter for 2026 orders
+    // Filter: 2026 + status_id 11 (Awaiting Fulfillment)
     const total = ordersRaw.length;
     const orders2026 = ordersRaw.filter((o) => {
       const d = new Date(String(o.date_created));
       return d.getFullYear() === 2026;
     });
-
     const awaiting11 = orders2026.filter((o) => Number(o.status_id) === 11);
     const awaiting2 = orders2026.filter((o) => Number(o.status_id) === 2);
 
@@ -59,21 +58,33 @@ export async function GET() {
     console.log(`[Orders API] 2026 + status_id=11: ${awaiting11.length}`);
     console.log(`[Orders API] 2026 + status_id=2: ${awaiting2.length}`);
 
-    if (orders2026.length > 0) {
-      const statusIds = [...new Set(orders2026.map((o) => o.status_id))];
-      console.log(`[Orders API] Unique status_ids in 2026 orders: ${statusIds.join(', ')}`);
-    }
-    if (ordersRaw.length > 0) {
-      const years = [...new Set(ordersRaw.map((o) => new Date(String(o.date_created)).getFullYear()))];
-      console.log(`[Orders API] Years in fetched data: ${years.sort().join(', ')}`);
-    }
-
     const awaitingOrders = awaiting11.length > 0 ? awaiting11 : awaiting2;
     const latest50 = awaitingOrders
-      .sort((a, b) => new Date(String(b.date_created)).getTime() - new Date(String(a.date_created)).getTime())
+      .sort((a, b) =>
+        new Date(String(b.date_created)).getTime() - new Date(String(a.date_created)).getTime()
+      )
       .slice(0, 50);
 
-    return NextResponse.json(latest50, {
+    // Fetch product details for each order (BC v2 returns products as URL ref)
+    const enriched = await Promise.all(
+      latest50.map(async (order) => {
+        try {
+          const prodUrl = `https://api.bigcommerce.com/stores/${BC_STORE_HASH}/v2/orders/${order.id}/products`;
+          const prodRes = await fetch(prodUrl, { method: 'GET', headers });
+          if (prodRes.ok) {
+            const products = await prodRes.json();
+            return { ...order, products: Array.isArray(products) ? products : [] };
+          }
+        } catch (e) {
+          console.error(`[Orders API] Failed to fetch products for order ${order.id}:`, e);
+        }
+        return { ...order, products: [] };
+      })
+    );
+
+    console.log(`[Orders API] Returning ${enriched.length} enriched orders`);
+
+    return NextResponse.json(enriched, {
       headers: {
         'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
       },
