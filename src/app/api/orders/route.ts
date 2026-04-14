@@ -19,8 +19,9 @@ export async function GET() {
   }
 
   try {
+    // Fetch up to 250 orders to have enough pool for filtering
     const response = await fetch(
-      `https://api.bigcommerce.com/stores/${BC_STORE_HASH}/v2/orders`,
+      `https://api.bigcommerce.com/stores/${BC_STORE_HASH}/v2/orders?limit=250`,
       {
         method: 'GET',
         headers: {
@@ -39,27 +40,22 @@ export async function GET() {
     }
 
     const data = await response.json();
-    
-    // Get all orders
-    const orders: BigCommerceOrder[] = Array.isArray(data) ? data : (data as { orders: BigCommerceOrder[] }).orders || [];
-    
-    // Debug: Return ALL orders to identify status_id for current orders
-    // Temporarily disabled filter: status_id = 2
-    
-    // Sort by date_created (oldest first)
-    const sortedOrders = orders.sort((a: BigCommerceOrder, b: BigCommerceOrder) => {
-      const dateA = new Date(a.date_created as string).getTime();
-      const dateB = new Date(b.date_created as string).getTime();
-      return dateA - dateB; // Oldest first
-    });
-    
-    // Debug: Log first order structure
-    if (sortedOrders.length > 0) {
-      console.log('First order structure:', JSON.stringify(sortedOrders[0], null, 2));
-    }
-    
-    // Return filtered and sorted orders
-    return NextResponse.json(sortedOrders, {
+    const ordersRaw: BigCommerceOrder[] = Array.isArray(data)
+      ? data
+      : ((data as any)?.orders ?? []);
+
+    // 50 latest 2026 orders with status_id === 2 (Awaiting Fulfillment)
+    const latest2026 = ordersRaw
+      .filter((o) => {
+        const d = new Date(String(o.date_created));
+        return d.getFullYear() === 2026 && Number(o.status_id) === 2;
+      })
+      .sort((a, b) =>
+        new Date(String(b.date_created)).getTime() - new Date(String(a.date_created)).getTime()
+      )
+      .slice(0, 50);
+
+    return NextResponse.json(latest2026, {
       headers: {
         'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
       },
