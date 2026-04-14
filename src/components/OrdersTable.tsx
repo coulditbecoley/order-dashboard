@@ -24,7 +24,6 @@ interface OrderRow {
   washer: string;
   acc: string;
   secCord: string;
-  notes: string;
 }
 
 interface CutCheckState {
@@ -93,7 +92,7 @@ function extractOrderDetails(order: BigCommerceOrder): OrderRow {
     qty: String(product?.quantity || order.items_total || '—'),
     type: product?.name || '—',
     model: extractGunModel(modelStr),
-    light: extractLight(modelStr),
+    light: modelStr !== '—' ? stripPrice(modelStr) : '—',
     hand: stripPrice(getOptionValue('hand')),
     color: backColorStr ? `${stripPrice(colorStr)} / ${stripPrice(backColorStr)}` : stripPrice(colorStr),
     oc: extractBool(getOptionValue('optic cut')),
@@ -103,7 +102,6 @@ function extractOrderDetails(order: BigCommerceOrder): OrderRow {
     washer: washersStr?.toLowerCase().includes('none') ? 'None' : stripPrice(washersStr),
     acc: getOptionValue('accessory') === '—' ? '—' : stripPrice(getOptionValue('accessory')),
     secCord: extractBool(getOptionValue('security cord')),
-    notes: notes.substring(0, 50) + (notes.length > 50 ? '...' : ''),
   };
 }
 
@@ -114,7 +112,7 @@ export default function OrdersTable() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('date');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [cutChecks, setCutChecks] = useState<CutCheckState>({});
 
   const syncOrders = useCallback(async () => {
@@ -190,7 +188,6 @@ export default function OrdersTable() {
     { key: 'washer', label: 'WASHER' },
     { key: 'acc', label: 'ACC' },
     { key: 'secCord', label: 'SEC CORD' },
-    { key: 'notes', label: 'NOTES' },
     { key: 'statusId', label: 'STATUS_ID' },
   ];
 

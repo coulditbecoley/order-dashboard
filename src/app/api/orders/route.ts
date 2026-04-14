@@ -82,7 +82,15 @@ export async function GET() {
       })
     );
 
-    console.log(`[Orders API] Returning ${enriched.length} enriched orders`);
+    console.log(`[Orders Health] totalFetched=${total} | 2026=${orders2026.length} | status11=${awaiting11.length} | status2=${awaiting2.length} | final=${enriched.length}`);
+    if (orders2026.length > 0) {
+      const uniqueStatuses = [...new Set(orders2026.map(o => o.status_id))];
+      console.log(`[Orders Health] 2026 statuses: ${uniqueStatuses.join(', ')}`);
+    }
+    if (ordersRaw.length > 0) {
+      const years = [...new Set(ordersRaw.map(o => new Date(String(o.date_created)).getFullYear()))];
+      console.log(`[Orders Health] years in data: ${years.sort().join(', ')}`);
+    }
 
     return NextResponse.json(enriched, {
       headers: {
