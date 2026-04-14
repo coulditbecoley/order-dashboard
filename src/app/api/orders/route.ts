@@ -19,9 +19,9 @@ export async function GET() {
   }
 
   try {
-    // Fetch up to 250 orders to have enough pool for filtering
+    // Fetch up to 250 orders sorted newest-first so 2026 orders come back first
     const response = await fetch(
-      `https://api.bigcommerce.com/stores/${BC_STORE_HASH}/v2/orders?limit=250`,
+      `https://api.bigcommerce.com/stores/${BC_STORE_HASH}/v2/orders?limit=250&sort=date_created:desc&status_id=11`,
       {
         method: 'GET',
         headers: {
