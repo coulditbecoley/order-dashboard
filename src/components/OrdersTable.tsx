@@ -14,7 +14,6 @@ interface OrderRow {
   qty: string;
   type: string;
   model: string;
-  light: string;
   hand: string;
   color: string;
   oc: string;
@@ -87,13 +86,12 @@ function extractOrderDetails(order: BigCommerceOrder): OrderRow {
     id: order.id,
     orderNumber: String(order.id),
     statusId: String(order.status_id),
-    date: formatDate(new Date(order.date_created), 'MMM dd, yyyy'),
+    date: formatDate(new Date(order.date_created), 'MM/dd/yy'),
     cut: extractBool(getOptionValue('cut')),
     qty: String(product?.quantity || order.items_total || '—'),
     type: product?.name || '—',
-    model: extractGunModel(modelStr),
-    light: modelStr !== '—' ? stripPrice(modelStr) : '—',
-    hand: stripPrice(getOptionValue('hand')),
+    model: modelStr !== '—' ? stripPrice(modelStr) : '—',
+    hand: stripPrice(getOptionValue('hand')).replace(/\s*Hand$/i, ''),
     color: backColorStr ? `${stripPrice(colorStr)} / ${stripPrice(backColorStr)}` : stripPrice(colorStr),
     oc: extractBool(getOptionValue('optic cut')),
     magHw: extractBool(magStr),
@@ -178,7 +176,6 @@ export default function OrdersTable() {
     { key: 'qty', label: 'QTY' },
     { key: 'type', label: 'TYPE' },
     { key: 'model', label: 'MODEL' },
-    { key: 'light', label: 'LIGHT' },
     { key: 'hand', label: 'HAND' },
     { key: 'color', label: 'COLOR' },
     { key: 'oc', label: 'OC' },
