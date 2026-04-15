@@ -62,6 +62,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {/* Sidebar Nav */}
             <nav className="flex-1 px-3 py-4 space-y-2">
               <Link
+                href="/overview"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-sm transition-colors ${
+                  pathname === '/overview' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
+                }`}
+              >
+                <svg className="h-5 w-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                  />
+                </svg>
+                {sidebarOpen && <span>Overview</span>}
+              </Link>
+              <Link
                 href="/"
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-sm transition-colors ${
                   pathname === '/' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
