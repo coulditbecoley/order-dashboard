@@ -52,7 +52,12 @@ function extractGunModel(modelStr: string): string {
 function normalizeClip(clip: string): string {
   if (!clip || clip === '—') return '—';
   clip = stripPrice(clip);
+  // Common abbreviations for belt attachment types
   clip = clip.replace(/Discreet Carry Clip/i, 'DCC');
+  clip = clip.replace(/Double Soft Loops/i, 'DSL');
+  clip = clip.replace(/Single Soft Loop/i, 'SSL');
+  clip = clip.replace(/Pull The Dot/i, 'PTD');
+  clip = clip.replace(/Modular Wing/i, 'MW');
   return clip;
 }
 
@@ -64,11 +69,11 @@ function extractBool(text: string): string {
 function extractOrderDetails(order: BigCommerceOrder): OrderRow {
   const notes = order.customer_message || order.staff_notes || '';
   const product = order.products?.[0];
-  const options = product?.product_options || [];
-
-  // Helper to find option value by display name
+  // Collect options from all products in the order (handle multi-product orders)
+  const allProductOptions = (order.products || []).flatMap(p => p.product_options || []);
+  // Helper to find option value by display name across all products
   const getOptionValue = (displayName: string): string => {
-    const opt = options.find(o => o.display_name?.toLowerCase().includes(displayName.toLowerCase()));
+    const opt = allProductOptions.find(o => o.display_name?.toLowerCase().includes(displayName.toLowerCase()));
     return opt?.display_value || '—';
   };
 
@@ -77,7 +82,8 @@ function extractOrderDetails(order: BigCommerceOrder): OrderRow {
   const lightStr = getOptionValue('light') || extractLight(modelStr);
   const colorStr = getOptionValue('color') || getOptionValue('front color');
   const backColorStr = getOptionValue('back color');
-  const clipStr = getOptionValue('clip') || getOptionValue('belt attachment') || getOptionValue('belt loop');
+  // Belt attachment is the primary data source; fall back to clip or belt loop if not present
+  const clipStr = getOptionValue('belt attachment') || getOptionValue('clip') || getOptionValue('belt loop');
   const magStr = getOptionValue('mag carrier') || getOptionValue('non connected mag');
   const mwStr = getOptionValue('modwing') || getOptionValue('tek-mount');
   const washersStr = getOptionValue('washers') || getOptionValue('finishing washers');
