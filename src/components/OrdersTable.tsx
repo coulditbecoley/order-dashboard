@@ -34,20 +34,7 @@ function stripPrice(value: string): string {
   return value.replace(/\s*\([^)]*\$[^)]*\)/g, '').replace(/\s*\([^)]*\s+\d+\s+off\)/g, '').trim();
 }
 
-function extractLight(modelStr: string): string {
-  if (!modelStr) return '—';
-  const lights = ['Streamlight', 'Olight', 'Surefire', 'Inforce'];
-  for (const light of lights) {
-    if (modelStr.toLowerCase().includes(light.toLowerCase())) return light;
-  }
-  return '—';
-}
 
-function extractGunModel(modelStr: string): string {
-  if (!modelStr) return '—';
-  // Remove light/rail details, keep gun model only
-  return modelStr.split(/\s*(Streamlight|Olight|Surefire|Inforce|TLR|Baldr|PL-|1913)/i)[0].trim();
-}
 
 function normalizeClip(clip: string): string {
   if (!clip || clip === '—') return '—';
@@ -67,7 +54,6 @@ function extractBool(text: string): string {
 }
 
 function extractOrderDetails(order: BigCommerceOrder): OrderRow {
-  const notes = order.customer_message || order.staff_notes || '';
   const product = order.products?.[0];
   // Collect options from all products in the order (handle multi-product orders)
   const allProductOptions = (order.products || []).flatMap(p => p.product_options || []);
@@ -79,7 +65,8 @@ function extractOrderDetails(order: BigCommerceOrder): OrderRow {
 
   // Extract fields
   const modelStr = getOptionValue('model');
-  const lightStr = getOptionValue('light') || extractLight(modelStr);
+  // Light info reserved for future column use
+  // const lightStr = getOptionValue('light') || extractLight(modelStr);
   const colorStr = getOptionValue('color') || getOptionValue('front color');
   const backColorStr = getOptionValue('back color');
   // Belt attachment is the primary data source; fall back to clip or belt loop if not present
