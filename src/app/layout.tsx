@@ -5,6 +5,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
+import Logo from '@/components/Logo';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -35,18 +36,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           >
             {/* Sidebar Header */}
             <div className="h-16 flex items-center justify-between px-4 border-b border-gray-800">
-              {sidebarOpen && (
+              {sidebarOpen ? (
                 <div className="flex items-center gap-2">
-                  <svg className="h-8 w-8" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M 50 10 L 90 30 L 85 80 Q 50 95 50 95 Q 50 95 15 80 L 10 30 Z" fill="#ff4444" />
-                    <circle cx="40" cy="45" r="4" fill="#ff0000"/>
-                    <circle cx="60" cy="45" r="4" fill="#ff0000"/>
-                  </svg>
+                  <Logo size={36} />
                   <div className="flex flex-col">
                     <span className="font-bold text-gray-100 text-sm">Kobra</span>
                     <span className="text-xs text-gray-500">Dashboard</span>
                   </div>
                 </div>
+              ) : (
+                <Logo size={28} />
               )}
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
