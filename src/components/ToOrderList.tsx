@@ -15,21 +15,22 @@ function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
-export default function ToOrderList() {
-  const [items, setItems] = useState<ToOrderItem[]>([]);
-  const [newItemText, setNewItemText] = useState('');
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        setItems(JSON.parse(saved));
-      } catch (e) {
-        console.error('Failed to load to-order items:', e);
-      }
+function loadItems(): ToOrderItem[] {
+  if (typeof window === 'undefined') return [];
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      console.error('Failed to load to-order items:', e);
     }
-  }, []);
+  }
+  return [];
+}
+
+export default function ToOrderList() {
+  const [items, setItems] = useState<ToOrderItem[]>(loadItems);
+  const [newItemText, setNewItemText] = useState('');
 
   // Save to localStorage on change
   useEffect(() => {
