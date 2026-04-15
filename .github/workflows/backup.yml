@@ -1,0 +1,61 @@
+name: Nightly Backup
+
+on:
+  schedule:
+    # Run daily at 06:00 UTC (2 AM EDT)
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  backup:
+    name: Create Tagged Backup
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create backup tag
+        run: |
+          TIMESTAMP=$(date -u +"%Y%m%d-%H%M%SZ")
+          TAG="backup-${TIMESTAMP}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "Automated nightly backup $TIMESTAMP"
+          git push origin "$TAG"
+          echo "BACKUP_TAG=$TAG" >> $GITHUB_ENV
+
+      - name: Create source archive
+        run: |
+          TIMESTAMP=$(date -u +"%Y%m%d-%H%M%SZ")
+          tar czf "order-dashboard-backup-${TIMESTAMP}.tar.gz" \
+            --exclude=node_modules \
+            --exclude=.next \
+            --exclude=out \
+            .
+          echo "ARCHIVE=order-dashboard-backup-${TIMESTAMP}.tar.gz" >> $GITHUB_ENV
+
+      - name: Prune old backup tags (keep last 3)
+        run: |
+          TAGS=$(git tag -l 'backup-*' --sort=-creatordate)
+          COUNT=0
+          for tag in $TAGS; do
+            COUNT=$((COUNT + 1))
+            if [ $COUNT -gt 3 ]; then
+              echo "Deleting old backup tag: $tag"
+              git push origin --delete "$tag" || true
+              git tag -d "$tag" || true
+            fi
+          done
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-backup-${{ env.BACKUP_TAG }}
+          path: ${{ env.ARCHIVE }}
+          retention-days: 7
