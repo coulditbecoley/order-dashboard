@@ -248,14 +248,13 @@ export default function OrdersTable() {
                     {columns.map(col => (
                       <td key={col.key} className="px-4 py-3 text-gray-300 whitespace-nowrap">
                         {col.key === 'cut' ? (
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center justify-center">
                             <input
                               type="checkbox"
                               checked={isCutChecked}
                               onChange={(e) => handleCutChange(row.id, e.target.checked)}
                               className="h-4 w-4 rounded border-gray-600 bg-gray-700 text-indigo-600 cursor-pointer"
                             />
-                            <span>{row[col.key]}</span>
                           </div>
                         ) : (
                           row[col.key]
