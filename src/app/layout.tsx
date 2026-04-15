@@ -3,6 +3,7 @@
 import { Inter } from 'next/font/google';
 import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 import './globals.css';
 
@@ -16,6 +17,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const pathname = usePathname();
 
   return (
     <html lang="en">
@@ -62,7 +64,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <nav className="flex-1 px-3 py-4 space-y-2">
               <Link
                 href="/"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg bg-indigo-600 text-white font-medium text-sm transition-colors"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-sm transition-colors ${
+                  pathname === '/' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
+                }`}
               >
                 <svg className="h-5 w-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -73,6 +77,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   />
                 </svg>
                 {sidebarOpen && <span>Orders</span>}
+              </Link>
+              <Link
+                href="/to-order"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-sm transition-colors ${
+                  pathname === '/to-order' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
+                }`}
+              >
+                <svg className="h-5 w-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+                  />
+                </svg>
+                {sidebarOpen && <span>To Order</span>}
               </Link>
             </nav>
 
