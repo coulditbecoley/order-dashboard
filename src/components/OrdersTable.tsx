@@ -105,6 +105,7 @@ export default function OrdersTable() {
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [cutChecks, setCutChecks] = useState<CutCheckState>({});
+  const [autoLoaded, setAutoLoaded] = useState(false);
 
   const syncOrders = useCallback(async () => {
     setLoading(true);
@@ -124,6 +125,14 @@ export default function OrdersTable() {
       setLoading(false);
     }
   }, []);
+
+  // Auto-load orders on mount
+  useEffect(() => {
+    if (!autoLoaded) {
+      setAutoLoaded(true);
+      syncOrders();
+    }
+  }, [autoLoaded, syncOrders]);
 
   // Load cut states from localStorage on mount
   useEffect(() => {
