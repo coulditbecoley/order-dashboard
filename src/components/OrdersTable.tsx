@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { ArrowUpDown, RefreshCw } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { ArrowUpDown, RefreshCw, Search, X } from 'lucide-react';
 import { BigCommerceOrder } from '@/types';
 import { formatDate } from 'date-fns';
 
@@ -107,6 +107,53 @@ export default function OrdersTable() {
   const [cutChecks, setCutChecks] = useState<CutCheckState>({});
   const [autoLoaded, setAutoLoaded] = useState(false);
 
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<BigCommerceOrder[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [isSearchActive, setIsSearchActive] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounced search — fires 500ms after user stops typing
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      setIsSearchActive(false);
+      return;
+    }
+
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+
+    searchTimeoutRef.current = setTimeout(async () => {
+      setSearching(true);
+      setIsSearchActive(true);
+      try {
+        const res = await fetch(`/api/orders/search?q=${encodeURIComponent(searchQuery.trim())}`);
+        if (res.ok) {
+          const data = await res.json();
+          setSearchResults(Array.isArray(data.orders) ? data.orders : []);
+        } else {
+          setSearchResults([]);
+        }
+      } catch (e) {
+        console.error('Search failed:', e);
+        setSearchResults([]);
+      } finally {
+        setSearching(false);
+      }
+    }, 500);
+
+    return () => {
+      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    };
+  }, [searchQuery]);
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setSearchResults([]);
+    setIsSearchActive(false);
+  };
+
   const syncOrders = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -163,7 +210,8 @@ export default function OrdersTable() {
     localStorage.setItem('kobra_cut_states', JSON.stringify(newStates));
   };
 
-  const rows = orders.map(extractOrderDetails).sort((a, b) => {
+  const displayOrders = isSearchActive ? searchResults : orders;
+  const rows = displayOrders.map(extractOrderDetails).sort((a, b) => {
     const aVal = String(a[sortField]);
     const bVal = String(b[sortField]);
 
@@ -192,12 +240,43 @@ export default function OrdersTable() {
 
   return (
     <div className="space-y-4">
+      {/* Search Bar */}
+      <div className="relative">
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search all orders by order #, customer name, or email..."
+            className="w-full rounded-lg border border-gray-700 bg-gray-900 py-3 pl-11 pr-10 text-sm text-white placeholder:text-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          />
+          {searchQuery && (
+            <button
+              onClick={clearSearch}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+        {searching && (
+          <p className="mt-2 text-xs text-gray-500">Searching BigCommerce...</p>
+        )}
+        {isSearchActive && !searching && (
+          <p className="mt-2 text-xs text-gray-500">
+            {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} for "{searchQuery}"
+            <button onClick={clearSearch} className="ml-2 text-indigo-400 hover:text-indigo-300">Clear</button>
+          </p>
+        )}
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-50">Orders</h1>
           <p className="text-sm text-gray-400 mt-1">
-            {rows.length} orders • BigCommerce sync
+            {isSearchActive ? `${searchResults.length} search results` : `${rows.length} orders`} • BigCommerce sync
           </p>
         </div>
         <button
